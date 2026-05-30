@@ -133,13 +133,13 @@ export function Navbar({
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
                         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-                          <DropdownMenuRadioItem value="light">
-                            <IconSun />
-                            Light
-                          </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="system">
                             <IconDeviceDesktop />
                             System
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="light">
+                            <IconSun />
+                            Light
                           </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="dark">
                             <IconMoon />
