@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
@@ -21,6 +22,7 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 const formSchema = z
@@ -37,6 +39,10 @@ const formSchema = z
   })
 
 export default function SignUpPage() {
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,8 +52,47 @@ export default function SignUpPage() {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data)
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    setError(null)
+    setLoading(true)
+
+    const supabase = createClient()
+    const { error: authError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    setLoading(false)
+
+    if (authError) {
+      setError(authError.message)
+      return
+    }
+
+    setSuccess(true)
+  }
+
+  if (success) {
+    return (
+      <div className="flex min-h-svh items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Check your email</CardTitle>
+            <CardDescription>
+              A confirmation link has been sent to your email address.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button variant="outline" className="w-full" asChild>
+              <Link href="/sign-in">Sign in</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -67,6 +112,9 @@ export default function SignUpPage() {
         <CardContent>
           <form id="form-sign-up" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
+              {error && (
+                <p className="text-destructive text-sm">{error}</p>
+              )}
               <Controller
                 name="email"
                 control={form.control}
@@ -133,8 +181,13 @@ export default function SignUpPage() {
           </form>
         </CardContent>
         <CardFooter>
-          <Button type="submit" form="form-sign-up" className="w-full">
-            Create Account
+          <Button
+            type="submit"
+            form="form-sign-up"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? "Creating account..." : "Create Account"}
           </Button>
         </CardFooter>
       </Card>

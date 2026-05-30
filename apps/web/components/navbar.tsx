@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -19,6 +19,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@workspace/ui/components/navigation-menu"
 import { IconMenu2 } from "@tabler/icons-react"
+import { createClient } from "@/lib/supabase/client"
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -27,8 +28,20 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ]
 
-export function Navbar() {
+export function Navbar({
+  user,
+}: {
+  user: { email?: string } | null
+}) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -67,12 +80,31 @@ export function Navbar() {
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/sign-in">Sign in</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">Sign up free</Link>
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  {user.email ?? "Account"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onSelect={handleSignOut}>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/sign-in">Sign in</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up">Sign up free</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
