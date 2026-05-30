@@ -3,7 +3,15 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { IconUser, IconSettings, IconLogout, IconMoon, IconSun, IconDeviceDesktop } from "@tabler/icons-react"
+import {
+  IconUser,
+  IconSettings,
+  IconLogout,
+  IconMenu2,
+  IconMoon,
+  IconSun,
+  IconDeviceDesktop,
+} from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -31,9 +39,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@workspace/ui/components/avatar"
-
-import { IconMenu2 } from "@tabler/icons-react"
-import { createClient } from "@/lib/supabase/client"
+import { signOut } from "@/app/actions"
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -52,8 +58,7 @@ export function Navbar({
   const { theme, setTheme } = useTheme()
 
   async function handleSignOut() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await signOut()
     router.push("/")
     router.refresh()
   }
@@ -130,15 +135,15 @@ export function Navbar({
                         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
                           <DropdownMenuRadioItem value="light">
                             <IconSun />
-                            Terang
+                            Light
                           </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="system">
                             <IconDeviceDesktop />
-                            Sistem
+                            System
                           </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="dark">
                             <IconMoon />
-                            Gelap
+                            Dark
                           </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                       </DropdownMenuSubContent>

@@ -2,9 +2,16 @@
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { IconAlertCircle } from "@tabler/icons-react"
 import { Controller, useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
 import * as z from "zod"
 
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -22,7 +29,8 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { createClient } from "@/lib/supabase/client"
+import { Spinner } from "@workspace/ui/components/spinner"
+import { signUp } from "@/app/actions"
 import Link from "next/link"
 
 const formSchema = z
@@ -39,6 +47,7 @@ const formSchema = z
   })
 
 export default function SignUpPage() {
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -56,19 +65,24 @@ export default function SignUpPage() {
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    const formData = new FormData()
+    formData.append("email", data.email)
+    formData.append("password", data.password)
+    formData.append("confirmPassword", data.confirmPassword)
+    formData.append("origin", window.location.origin)
+
+    const result = await signUp(formData)
 
     setLoading(false)
 
-    if (authError) {
-      setError(authError.message)
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+
+    if (!result.confirmationRequired) {
+      router.push("/")
+      router.refresh()
       return
     }
 
@@ -113,7 +127,11 @@ export default function SignUpPage() {
           <form id="form-sign-up" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               {error && (
-                <p className="text-destructive text-sm">{error}</p>
+                <Alert variant="destructive">
+                  <IconAlertCircle />
+                  <AlertTitle>Sign up failed</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
               <Controller
                 name="email"
@@ -187,6 +205,7 @@ export default function SignUpPage() {
             className="w-full"
             disabled={loading}
           >
+            {loading && <Spinner />}
             {loading ? "Creating account..." : "Create Account"}
           </Button>
         </CardFooter>

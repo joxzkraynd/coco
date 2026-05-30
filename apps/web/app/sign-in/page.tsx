@@ -1,11 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { IconAlertCircle } from "@tabler/icons-react"
 import { Controller, useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 import * as z from "zod"
 
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -23,7 +29,8 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { createClient } from "@/lib/supabase/client"
+import { Spinner } from "@workspace/ui/components/spinner"
+import { signIn } from "@/app/actions"
 import Link from "next/link"
 
 const formSchema = z.object({
@@ -38,6 +45,18 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const errorParam = params.get("error")
+    if (errorParam) {
+      const messages: Record<string, string> = {
+        auth_callback_error:
+          "Authentication failed. Please try signing in again.",
+      }
+      setError(messages[errorParam] ?? errorParam)
+    }
+  }, [])
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,16 +69,16 @@ export default function SignInPage() {
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    const formData = new FormData()
+    formData.append("email", data.email)
+    formData.append("password", data.password)
+
+    const result = await signIn(formData)
 
     setLoading(false)
 
-    if (authError) {
-      setError(authError.message)
+    if (result.error) {
+      setError(result.error)
       return
     }
 
@@ -85,7 +104,11 @@ export default function SignInPage() {
           <form id="form-sign-in" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               {error && (
-                <p className="text-destructive text-sm">{error}</p>
+                <Alert variant="destructive">
+                  <IconAlertCircle />
+                  <AlertTitle>Sign in failed</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
               <Controller
                 name="email"
@@ -138,6 +161,7 @@ export default function SignInPage() {
             className="w-full"
             disabled={loading}
           >
+            {loading && <Spinner />}
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </CardFooter>
