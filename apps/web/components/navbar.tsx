@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { IconUser, IconSettings, IconLogout } from "@tabler/icons-react"
+import { useTheme } from "next-themes"
+import { IconUser, IconSettings, IconLogout, IconMoon, IconSun, IconDeviceDesktop } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -10,7 +11,13 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import {
@@ -42,6 +49,7 @@ export function Navbar({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -112,6 +120,30 @@ export function Navbar({
                       Settings
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      {theme === "light" ? <IconSun /> : theme === "dark" ? <IconMoon /> : <IconDeviceDesktop />}
+                      Theme
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                          <DropdownMenuRadioItem value="light">
+                            <IconSun />
+                            Terang
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="system">
+                            <IconDeviceDesktop />
+                            Sistem
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="dark">
+                            <IconMoon />
+                            Gelap
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
