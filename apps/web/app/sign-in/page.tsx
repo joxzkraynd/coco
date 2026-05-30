@@ -24,7 +24,7 @@ import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
 
 const formSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
+  email: z.email("Enter a valid email address."),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters."),
