@@ -31,65 +31,22 @@ import {
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { Spinner } from "@workspace/ui/components/spinner"
-import { signIn, signUp } from "@/app/actions"
+import { signIn } from "@/app/actions"
 
-const signInSchema = z.object({
+const formSchema = z.object({
   email: z.email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
 })
 
-const signUpSchema = z
-  .object({
-    email: z.email("Enter a valid email address."),
-    password: z.string().min(8, "Password must be at least 8 characters."),
-    confirmPassword: z.string().min(1, "Please confirm your password."),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  })
-
-type Mode = "sign-in" | "sign-up"
-
-const config = {
-  "sign-in": {
-    schema: signInSchema,
-    action: signIn,
-    title: "Sign in to your account",
-    description: "Enter your email below to sign in to your account",
-    actionLabel: "Sign Up",
-    actionHref: "/sign-up",
-    buttonLabel: "Sign in",
-    buttonLoadingLabel: "Signing in...",
-  },
-  "sign-up": {
-    schema: signUpSchema,
-    action: signUp,
-    title: "Create an account",
-    description: "Enter your email below to create your account",
-    actionLabel: "Sign In",
-    actionHref: "/sign-in",
-    buttonLabel: "Create Account",
-    buttonLoadingLabel: "Creating account...",
-  },
-} as const
-
-export function AuthPage({ mode }: { mode: Mode }) {
+export function LoginForm() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const isSignUp = mode === "sign-up"
-  const c = config[mode]
-
-  const form = useForm({
-    resolver: zodResolver(c.schema),
-    defaultValues: { email: "", password: "", confirmPassword: "" },
-  })
+  const [next, setNext] = useState("/")
 
   useEffect(() => {
-    if (isSignUp) return
     const params = new URLSearchParams(window.location.search)
+
     const errorParam = params.get("error")
     if (errorParam) {
       const messages: Record<string, string> = {
@@ -98,20 +55,25 @@ export function AuthPage({ mode }: { mode: Mode }) {
       }
       setError(messages[errorParam] ?? errorParam)
     }
-  }, [isSignUp])
 
-  async function onSubmit(data: { email: string; password: string; confirmPassword?: string }) {
+    const nextParam = params.get("next")
+    if (nextParam) setNext(nextParam)
+  }, [])
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: "", password: "" },
+  })
+
+  async function onSubmit(data: { email: string; password: string }) {
     setError(null)
     setLoading(true)
 
     const formData = new FormData()
     formData.append("email", data.email)
     formData.append("password", data.password)
-    if (isSignUp) {
-      formData.append("origin", window.location.origin)
-    }
 
-    const result = await c.action(formData)
+    const result = await signIn(formData)
 
     setLoading(false)
 
@@ -120,54 +82,31 @@ export function AuthPage({ mode }: { mode: Mode }) {
       return
     }
 
-    if (isSignUp && "confirmationRequired" in result && result.confirmationRequired) {
-      setSuccess(true)
-      return
-    }
-
-    router.push("/")
+    router.push(next)
     router.refresh()
-  }
-
-  if (success) {
-    return (
-      <div className="flex min-h-svh items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>
-              A confirmation link has been sent to your email address.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    )
   }
 
   return (
     <div className="flex min-h-svh items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>{c.title}</CardTitle>
-          <CardDescription>{c.description}</CardDescription>
+          <CardTitle>Sign in to your account</CardTitle>
+          <CardDescription>
+            Enter your email below to sign in to your account
+          </CardDescription>
           <CardAction>
             <Button variant="link" asChild>
-              <Link href={c.actionHref}>{c.actionLabel}</Link>
+              <Link href="/sign-up">Sign Up</Link>
             </Button>
           </CardAction>
         </CardHeader>
         <CardContent>
-          <form id={`form-${mode}`} onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="form-sign-in" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               {error && (
                 <Alert variant="destructive">
                   <IconAlertCircle />
-                  <AlertTitle>{c.title}</AlertTitle>
+                  <AlertTitle>Sign in failed</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -183,6 +122,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                       type="email"
                       placeholder="m@example.com"
                       autoComplete="email"
+                      disabled={loading}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.invalid && (
@@ -201,7 +141,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
                       {...field}
                       id={field.name}
                       type="password"
-                      autoComplete={isSignUp ? "new-password" : "current-password"}
+                      autoComplete="current-password"
+                      disabled={loading}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.invalid && (
@@ -210,41 +151,18 @@ export function AuthPage({ mode }: { mode: Mode }) {
                   </Field>
                 )}
               />
-              {isSignUp && (
-                <Controller
-                  name="confirmPassword"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        Confirm Password
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id={field.name}
-                        type="password"
-                        autoComplete="new-password"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              )}
             </FieldGroup>
           </form>
         </CardContent>
         <CardFooter>
           <Button
             type="submit"
-            form={`form-${mode}`}
+            form="form-sign-in"
             className="w-full"
             disabled={loading}
           >
             {loading && <Spinner />}
-            {loading ? c.buttonLoadingLabel : c.buttonLabel}
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
         </CardFooter>
       </Card>

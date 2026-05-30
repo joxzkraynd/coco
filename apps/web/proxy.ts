@@ -31,7 +31,18 @@ export async function proxy(request: NextRequest) {
     },
   )
 
-  await supabase.auth.getClaims()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const protectedPaths = ["/profile", "/settings"]
+  const isProtected = protectedPaths.some((p) =>
+    request.nextUrl.pathname.startsWith(p),
+  )
+
+  if (isProtected && !user) {
+    const url = new URL("/sign-in", request.url)
+    url.searchParams.set("next", request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }
