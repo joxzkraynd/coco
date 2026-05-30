@@ -65,10 +65,10 @@ export default function SignInPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="sign-in-email">Email</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                     <Input
                       {...field}
-                      id="sign-in-email"
+                      id={field.name}
                       type="email"
                       placeholder="m@example.com"
                       autoComplete="email"
@@ -85,12 +85,12 @@ export default function SignInPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="sign-in-password">
+                    <FieldLabel htmlFor={field.name}>
                       Password
                     </FieldLabel>
                     <Input
                       {...field}
-                      id="sign-in-password"
+                      id={field.name}
                       type="password"
                       autoComplete="current-password"
                       aria-invalid={fieldState.invalid}

@@ -72,10 +72,10 @@ export default function SignUpPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                     <Input
                       {...field}
-                      id="sign-up-email"
+                      id={field.name}
                       type="email"
                       placeholder="m@example.com"
                       autoComplete="email"
@@ -92,12 +92,12 @@ export default function SignUpPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="sign-up-password">
+                    <FieldLabel htmlFor={field.name}>
                       Password
                     </FieldLabel>
                     <Input
                       {...field}
-                      id="sign-up-password"
+                      id={field.name}
                       type="password"
                       autoComplete="new-password"
                       aria-invalid={fieldState.invalid}
@@ -113,12 +113,12 @@ export default function SignUpPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="sign-up-confirm-password">
+                    <FieldLabel htmlFor={field.name}>
                       Confirm Password
                     </FieldLabel>
                     <Input
                       {...field}
-                      id="sign-up-confirm-password"
+                      id={field.name}
                       type="password"
                       autoComplete="new-password"
                       aria-invalid={fieldState.invalid}
