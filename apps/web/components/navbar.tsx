@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -27,6 +28,8 @@ const navItems = [
 ]
 
 export function Navbar() {
+  const pathname = usePathname()
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -35,7 +38,9 @@ export function Navbar() {
             {navItems.map((item) => (
               <NavigationMenuItem key={item.href}>
                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link href={item.href}>{item.label}</Link>
+                  <Link href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
+                    {item.label}
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
@@ -52,7 +57,9 @@ export function Navbar() {
             <DropdownMenuGroup>
               {navItems.map((item) => (
                 <DropdownMenuItem key={item.href} asChild>
-                  <Link href={item.href}>{item.label}</Link>
+                  <Link href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
+                    {item.label}
+                  </Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
