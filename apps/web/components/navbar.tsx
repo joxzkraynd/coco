@@ -1,7 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
+import {
+  IconUser,
+  IconSettings,
+  IconLogout,
+  IconMenu2,
+  IconMoon,
+  IconSun,
+  IconDeviceDesktop,
+} from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -9,6 +19,13 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import {
@@ -18,7 +35,11 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@workspace/ui/components/navigation-menu"
-import { IconMenu2 } from "@tabler/icons-react"
+import {
+  Avatar,
+  AvatarFallback,
+} from "@workspace/ui/components/avatar"
+import { signOut } from "@/app/actions"
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -27,8 +48,20 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ]
 
-export function Navbar() {
+export function Navbar({
+  user,
+}: {
+  user: { email?: string } | null
+}) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { theme, setTheme } = useTheme()
+
+  async function handleSignOut() {
+    await signOut()
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -67,12 +100,75 @@ export function Navbar() {
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/sign-in">Sign in</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">Sign up free</Link>
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user.email?.charAt(0).toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <IconUser />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <IconSettings />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      {theme === "light" ? <IconSun /> : theme === "dark" ? <IconMoon /> : <IconDeviceDesktop />}
+                      Theme
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                          <DropdownMenuRadioItem value="system">
+                            <IconDeviceDesktop />
+                            System
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="light">
+                            <IconSun />
+                            Light
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="dark">
+                            <IconMoon />
+                            Dark
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem variant="destructive" onSelect={handleSignOut}>
+                    <IconLogout />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/sign-in">Sign in</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up">Sign up free</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
