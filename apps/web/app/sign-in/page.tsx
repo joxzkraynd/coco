@@ -44,7 +44,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
+    <div className="flex min-h-svh items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign in to your account</CardTitle>
@@ -85,17 +85,9 @@ export default function SignInPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <div className="flex items-center">
-                      <FieldLabel htmlFor="sign-in-password">
-                        Password
-                      </FieldLabel>
-                      <a
-                        href="#"
-                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                      >
-                        Forgot your password?
-                      </a>
-                    </div>
+                    <FieldLabel htmlFor="sign-in-password">
+                      Password
+                    </FieldLabel>
                     <Input
                       {...field}
                       id="sign-in-password"
