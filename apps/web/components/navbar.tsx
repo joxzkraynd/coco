@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { IconUser, IconSettings, IconLogout } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -22,6 +23,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@workspace/ui/components/avatar"
+import { Separator } from "@workspace/ui/components/separator"
 import { IconMenu2 } from "@tabler/icons-react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -97,7 +99,23 @@ export function Navbar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <IconUser />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <IconSettings />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <Separator />
+                <DropdownMenuGroup>
                   <DropdownMenuItem onSelect={handleSignOut}>
+                    <IconLogout />
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
