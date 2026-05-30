@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import {
@@ -23,7 +24,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@workspace/ui/components/avatar"
-import { Separator } from "@workspace/ui/components/separator"
+
 import { IconMenu2 } from "@tabler/icons-react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -112,9 +113,9 @@ export function Navbar({
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <Separator />
+                <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onSelect={handleSignOut}>
+                  <DropdownMenuItem variant="destructive" onSelect={handleSignOut}>
                     <IconLogout />
                     Sign out
                   </DropdownMenuItem>
