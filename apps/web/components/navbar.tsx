@@ -18,6 +18,10 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@workspace/ui/components/navigation-menu"
+import {
+  Avatar,
+  AvatarFallback,
+} from "@workspace/ui/components/avatar"
 import { IconMenu2 } from "@tabler/icons-react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -83,8 +87,12 @@ export function Navbar({
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
-                  {user.email ?? "Account"}
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user.email?.charAt(0).toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
